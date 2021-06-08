@@ -124,7 +124,7 @@ bool ts::Hook32(PBYTE hooked, PVOID hook32Template, SIZE_T bytes)
 	return true;
 }
 
-bool ts::Hook64(PBYTE hooked, PVOID shellcode, SIZE_T shellSize, SIZE_T bytes)
+bool ts::Hook64(PBYTE hooked, PVOID shellcode, SIZE_T shellSize, SIZE_T bytes) // bytes = total stolenbytes
 {
 	DWORD oldProtection;
 	VirtualProtect(hooked, bytes, PAGE_EXECUTE_READWRITE, &oldProtection);
@@ -132,6 +132,7 @@ bool ts::Hook64(PBYTE hooked, PVOID shellcode, SIZE_T shellSize, SIZE_T bytes)
 	PBYTE stolenBytes = new BYTE[bytes];
 	ts::Nop(hooked, bytes, stolenBytes);
 
+	// Usamos el registro rdx para saltar, por eso lo salvamos antes del hook
 	                 // push rdx mov rdx, 0000000000000000          jmp rdx  pop rdx
 	char jumpArray[] = "\x52\x48\xba\x00\x00\x00\x00\x00\x00\x00\x00\xff\xe2\x5a";
 	char returnArray[] = "\x48\xba\x00\x00\x00\x00\x00\x00\x00\x00\xff\xe2"; // = 12
@@ -148,6 +149,7 @@ bool ts::Hook64(PBYTE hooked, PVOID shellcode, SIZE_T shellSize, SIZE_T bytes)
 		return false;
 	}
 
+	// Inyecta un jump a nuestra funcion, copia nuestro shellcode, luego los bytes robados y por ultimo, el jump de regreso
 	memcpy(hooked, jumpArray, sizeof(jumpArray) - 1);
 	memcpy(mAllocated, shellcode, shellSize); 
 	memcpy((PBYTE)mAllocated + shellSize, stolenBytes, bytes);
@@ -251,8 +253,8 @@ int hook()
 
 
 	PBYTE tohook = (PBYTE)0x7FF731097BFC;
-	char shellcodeArray[] = "\x83\xC0\x04";
-	ts::Hook64(tohook, shellcodeArray, 3, 20);
+	char shellcodeArray[] = "\x83\xC0\x04"; // add eax,0x4
+	ts::Hook64(tohook, shellcodeArray, 3, 20); // (hookedfunc, shellcode, shellcodesize, stolenbytessize)
 
 	//char aob[] = "\x89\x85\x00\x00\x00\x00\x48\x8d\x15\x00\x00\x00\x00\x48\x8b\x0d\x00\x00\x00\x00\xe8\x00\x00\x00\x00\x8b\x95";
 	//char mask[] = "xx????xxx????xxx????x????xx";
