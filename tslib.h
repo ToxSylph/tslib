@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <vector>
 #include <iostream>
 #include <TlHelp32.h>
 #include <Psapi.h>
@@ -18,6 +19,9 @@ namespace ts
 
 	bool Hook32(PBYTE hooked, PVOID hook32Template, SIZE_T bytes);
 	bool Hook64(PBYTE hooked, PVOID shellcode, SIZE_T shellSize, SIZE_T bytes);
+
+	uintptr_t ResolveAddr(uintptr_t ptr, std::vector<unsigned int> offsets);
+	uintptr_t ResolveAddrEx(HANDLE hProc, uintptr_t ptr, std::vector<unsigned int> offsets);
 
 	DWORD GetPID(const PWCHAR pName);
 	PVOID GetMBA(DWORD pid, const  PWCHAR mName, DWORD_PTR mSize);

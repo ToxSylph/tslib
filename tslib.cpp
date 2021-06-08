@@ -162,6 +162,28 @@ bool ts::Hook64(PBYTE hooked, PVOID shellcode, SIZE_T shellSize, SIZE_T bytes) /
 	return true;
 }
 
+uintptr_t ts::ResolveAddr(uintptr_t ptr, std::vector<unsigned int> offsets)
+{
+	uintptr_t addr = ptr;
+	for (unsigned int i = 0; i < offsets.size(); ++i)
+	{
+		addr = *(uintptr_t*)addr;
+		addr += offsets[i];
+	}
+	return addr;
+}
+
+uintptr_t ts::ResolveAddrEx(HANDLE hProcess, uintptr_t ptr, std::vector<unsigned int> offsets)
+{
+	uintptr_t addr = ptr;
+	for (unsigned int i = 0; i < offsets.size(); ++i)
+	{
+		ReadProcessMemory(hProcess, (BYTE*)addr, &addr, sizeof(addr), 0);
+		addr += offsets[i];
+	}
+	return addr;
+}
+
 
 //void* ptrs = &ppp;
 //DWORD hookedAddress = 0x002450B9;
