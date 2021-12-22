@@ -240,7 +240,7 @@ PVOID ts::GetMBA(DWORD pid, const  PWCHAR mName, DWORD_PTR mSize)
 	MODULEENTRY32 mCurrent;
 	mCurrent.dwSize = sizeof(mCurrent);
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
-	if (hSnap == INVALID_HANDLE_VALUE) {
+	if (hSnap != INVALID_HANDLE_VALUE) {
 		if (Module32First(hSnap, &mCurrent))
 		{
 			do
